@@ -59,8 +59,8 @@ footer{margin-top:55px;border-top:1px solid #22263b;padding:28px;text-align:cent
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = "https://vakfrxsimzkgvnilmveu.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_yYclFxQg9rv7-DmxHozfxQ_50jL7H9t";
+const SUPABASE_URL = "PASTE_YOUR_PROJECT_URL_HERE";
+const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_PUBLISHABLE_KEY_HERE";
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY
@@ -115,10 +115,7 @@ async function loadGames(){
   render(games);
 }
 function render(list){
- grid.innerHTML=list.map((g,i)=>{
-   const bg=g.image?`style="background-image:linear-gradient(rgba(0,0,0,.15),rgba(0,0,0,.55)),url('${g.image.replace(/'/g,"\\'")}');background-size:cover;background-position:center;"`:"";
-   return `<div class="card" onclick="openGame(${games.indexOf(g)})"><div class="cover ${g.c}" ${bg}>${g.name.toUpperCase()}</div><div class="body"><div class="title">${g.name}</div><div class="meta"><span>${g.genre}</span><span>★ ${g.rating}</span></div></div></div>`;
- }).join("");
+ grid.innerHTML=list.map((g,i)=>`<div class="card" onclick="openGame(${games.indexOf(g)})"><div class="cover ${g.c}">${g.name.toUpperCase()}</div><div class="body"><div class="title">${g.name}</div><div class="meta"><span>${g.genre}</span><span>★ ${g.rating}</span></div></div></div>`).join("");
  document.getElementById("count").textContent=list.length+" games";
  document.getElementById("empty").style.display=list.length?"none":"block";
 }
@@ -128,12 +125,7 @@ function filterGames(){
 }
 function openGame(i){
  const g=games[i];document.getElementById("home").style.display="none";document.getElementById("detail").style.display="block";
- const poster=document.getElementById("poster");
-  poster.className="poster "+g.c;
-  poster.textContent=g.name.toUpperCase();
-  poster.style.backgroundImage=g.image?`linear-gradient(rgba(0,0,0,.12),rgba(0,0,0,.5)),url('${g.image.replace(/'/g,"\\'")}')`:"";
-  poster.style.backgroundSize="cover";
-  poster.style.backgroundPosition="center";
+ document.getElementById("poster").className="poster "+g.c;document.getElementById("poster").textContent=g.name.toUpperCase();
  document.getElementById("dtitle").textContent=g.name;document.getElementById("desc").textContent=g.desc;
  document.getElementById("badges").innerHTML=`<span class="badge">${g.genre}</span><span class="badge">★ ${g.rating}</span><span class="badge">${g.platform}</span>`;
  document.getElementById("facts").innerHTML=`<div>Developer<br><b>${g.dev}</b></div><div>Genre<br><b>${g.genre}</b></div><div>Rating<br><b>★ ${g.rating}/5</b></div><div>Platforms<br><b>${g.platform}</b></div>`;
