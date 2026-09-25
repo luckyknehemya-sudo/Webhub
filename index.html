@@ -119,7 +119,7 @@ function render(list){
 function filterGames(){
  const q=document.getElementById("search").value.toLowerCase(), genre=document.getElementById("genre").value;
  render(games.filter(g=>(g.name+" "+g.genre+" "+g.dev).toLowerCase().includes(q)&&(!genre||g.genre===genre)));
-}
+  }
 function openGame(i){
  const g=games[i];document.getElementById("home").style.display="none";document.getElementById("detail").style.display="block";
  const poster=document.getElementById("poster");
