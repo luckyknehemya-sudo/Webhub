@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GameHub V3 — Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;background:#080914;color:#f5f6fb}
+button,input,select,textarea{font:inherit}.wrap{width:min(1200px,94%);margin:auto}
+nav{height:68px;background:#0d0e1c;border-bottom:1px solid #272a40;display:flex;align-items:center}
+.nav{display:flex;justify-content:space-between;align-items:center;width:100%}.logo{font-weight:900;font-size:23px}.logo span{color:#a855f7}.admin{color:#9297ad;font-size:12px}
+main{padding:30px 0}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top h1{font-size:30px}.top p{color:#9297ad;margin-top:6px}
+.btn{border:1px solid #363a53;background:#15172a;color:#fff;padding:10px 15px;border-radius:9px;cursor:pointer}.primary{background:linear-gradient(90deg,#ef3340,#8b5cf6);border:0;font-weight:700}.danger{background:#3a1620;border-color:#642531;color:#ff9ba7}
+.panel{background:#101221;border:1px solid #292c43;border-radius:15px;padding:20px;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}.stat{background:#15172a;border:1px solid #292c43;border-radius:12px;padding:18px}.stat b{font-size:28px;display:block}.stat span{color:#9297ad;font-size:12px}
+.toolbar{display:flex;gap:10px;margin-bottom:16px}.toolbar input{flex:1}
+input,select,textarea{background:#0c0e1b;border:1px solid #34384f;color:#fff;border-radius:8px;padding:11px;outline:none;width:100%}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid #25283d;font-size:13px}th{color:#9297ad;font-size:11px;text-transform:uppercase}td small{color:#8c91a6}.actions{display:flex;gap:7px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:15px;z-index:50}.modal.open{display:flex}.modalbox{background:#111324;border:1px solid #34384e;border-radius:15px;width:min(600px,100%);padding:22px}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;color:#aeb2c1}.full{grid-column:1/-1}.modalfoot{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+.notice{display:none;padding:11px;border-radius:8px;background:#17351f;color:#a8f0b7;margin-bottom:15px;font-size:13px}
+@media(max-width:700px){.stats{grid-template-columns:1fr}.top{align-items:flex-start;gap:12px}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}table{min-width:720px}.tablewrap{overflow:auto}.toolbar{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#080914">
+<div style="width:min(420px,100%);background:#101221;border:1px solid #292c43;border-radius:15px;padding:24px">
+<h1 style="margin-bottom:8px">🎮 GameHub Admin</h1>
+<p style="color:#9297ad;margin-bottom:20px">Sign in to manage your game catalog.</p>
+<div id="loginNotice" style="display:none;padding:11px;border-radius:8px;background:#4a2020;color:#ffc0c0;margin-bottom:15px;font-size:13px"></div>
+<form id="loginForm">
+<div class="field" style="margin-bottom:12px"><label>Email</label><input id="loginEmail" type="email" required autocomplete="email"></div>
+<div class="field" style="margin-bottom:16px"><label>Password</label><input id="loginPassword" type="password" required autocomplete="current-password"></div>
+<button id="loginBtn" class="btn primary" type="submit" style="width:100%">Sign in</button>
+</form></div></div>
+<div id="app" style="display:none">
+<nav><div class="wrap nav"><div class="logo">🎮 GAME<span>HUB</span></div><div class="admin">ADMIN DASHBOARD • V3 <button class="btn" style="margin-left:8px;padding:6px 10px" onclick="logout()">Logout</button></div></div></nav>
+<main class="wrap">
+<div class="top"><div><h1>Game Management</h1><p>Add and manage games for your GameHub catalog.</p></div><button class="btn primary" onclick="openAdd()">＋ Add Game</button></div>
+<div class="stats"><div class="stat"><b id="total">0</b><span>TOTAL GAMES</span></div><div class="stat"><b id="genres">0</b><span>GENRES</span></div><div class="stat"><b id="avg">0.0</b><span>AVERAGE RATING</span></div></div>
+<div class="panel">
+<div id="notice" class="notice"></div>
+<div class="toolbar"><input id="search" placeholder="Search games or developers..." oninput="render()"><select id="filter" onchange="render()"><option value="">All genres</option><option>Action</option><option>Adventure</option><option>Racing</option><option>Sports</option><option>Strategy</option><option>Puzzle</option></select></div>
+<div class="tablewrap"><table><thead><tr><th>Game</th><th>Genre</th><th>Developer</th><th>Rating</th><th>Platforms</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div>
+</div>
+</main>
+</div>
+
+<div class="modal" id="modal"><div class="modalbox">
+<div class="modalhead"><h2 id="modalTitle">Add Game</h2><button class="btn" onclick="closeModal()">✕</button></div>
+<form id="gameForm" onsubmit="saveGame(event)">
+<input type="hidden" id="editId">
+<div class="formgrid">
+<div class="field"><label>Game name</label><input id="name" required></div>
+<div class="field"><label>Genre</label><select id="genre" required><option>Action</option><option>Adventure</option><option>Racing</option><option>Sports</option><option>Strategy</option><option>Puzzle</option><option>Casual</option><option>Multiplayer</option></select></div>
+<div class="field"><label>Developer</label><input id="dev" required></div>
+<div class="field"><label>Rating (0–5)</label><input id="rating" type="number" min="0" max="5" step=".1" value="4.5" required></div>
+<div class="field full"><label>Platforms</label><input id="platforms" placeholder="Android, iOS, PC"></div>
+<div class="field full"><label>Official website</label><input id="url" type="url" placeholder="https://example.com"></div>
+<div class="field full"><label>Description</label><textarea id="desc" rows="4"></textarea></div>
+</div>
+<div class="modalfoot"><button type="button" class="btn" onclick="closeModal()">Cancel</button><button class="btn primary">Save Game</button></div>
+</form></div></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://vakfrxsimzkgvnilmveu.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_yYclFxQg9rv7-DmxHozfxQ_50jL7H9t";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let games=[];
+
+async function loadGames(){
+  const {data,error}=await supabaseClient.from('games').select('*').order('created_at',{ascending:false});
+  if(error){show('Could not load games: '+error.message,true); console.error(error); return;}
+  games=data||[]; render();
+}
+function render(){
+ const q=document.getElementById('search').value.toLowerCase(), f=document.getElementById('filter').value;
+ const list=games.filter(g=>(g.name+' '+(g.developer||'')+' '+(g.genre||'')).toLowerCase().includes(q)&&(!f||g.genre===f));
+ document.getElementById('rows').innerHTML=list.map(g=>`<tr><td><b>${esc(g.name)}</b><br><small>${esc(g.description||'')}</small></td><td>${esc(g.genre||'')}</td><td>${esc(g.developer||'')}</td><td>★ ${Number(g.rating||0).toFixed(1)}</td><td>${esc(g.platforms||'')}</td><td><div class="actions"><button class="btn" onclick="editGame(${g.id})">Edit</button><button class="btn danger" onclick="deleteGame(${g.id})">Delete</button></div></td></tr>`).join('');
+ document.getElementById('total').textContent=games.length;
+ document.getElementById('genres').textContent=new Set(games.map(g=>g.genre).filter(Boolean)).size;
+ document.getElementById('avg').textContent=games.length?(games.reduce((a,g)=>a+Number(g.rating||0),0)/games.length).toFixed(1):'0.0';
+}
+function openAdd(){document.getElementById('gameForm').reset();document.getElementById('editId').value='';document.getElementById('modalTitle').textContent='Add Game';document.getElementById('modal').classList.add('open')}
+function editGame(id){
+ const g=games.find(x=>x.id===id); if(!g)return;
+ document.getElementById('name').value=g.name||''; document.getElementById('genre').value=g.genre||'Action'; document.getElementById('dev').value=g.developer||''; document.getElementById('rating').value=g.rating??4.5; document.getElementById('platforms').value=g.platforms||''; document.getElementById('url').value=g.official_url||''; document.getElementById('desc').value=g.description||'';
+ document.getElementById('editId').value=id; document.getElementById('modalTitle').textContent='Edit Game'; document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+async function saveGame(e){
+ e.preventDefault();
+ const id=Number(document.getElementById('editId').value);
+ const payload={name:document.getElementById('name').value.trim(),genre:document.getElementById('genre').value,developer:document.getElementById('dev').value.trim(),rating:Number(document.getElementById('rating').value),platforms:document.getElementById('platforms').value.trim(),official_url:document.getElementById('url').value.trim(),description:document.getElementById('desc').value.trim()};
+ let result;
+ if(id) result=await supabaseClient.from('games').update(payload).eq('id',id); else result=await supabaseClient.from('games').insert(payload);
+ if(result.error){show('Save failed: '+result.error.message,true); console.error(result.error); return;}
+ closeModal(); await loadGames(); show(id?'Game updated successfully.':'Game added successfully.');
+}
+async function deleteGame(id){
+ const g=games.find(x=>x.id===id); if(!g)return;
+ if(confirm('Delete '+g.name+'?')){const {error}=await supabaseClient.from('games').delete().eq('id',id); if(error){show('Delete failed: '+error.message,true);return;} await loadGames(); show('Game deleted.');}
+}
+function show(t,isError=false){const n=document.getElementById('notice');n.textContent=t;n.style.display='block';n.style.background=isError?'#4a2020':'#17351f';n.style.color=isError?'#ffc0c0':'#a8f0b7';setTimeout(()=>n.style.display='none',3000)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+async function verifyAdmin(){
+  const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+  if(userError || !user) return false;
+  const {data,error}=await supabaseClient.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();
+  if(error){console.error(error); return false;}
+  return !!data;
+}
+async function showDashboardIfAdmin(){
+  const ok=await verifyAdmin();
+  if(ok){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    await loadGames();
+  } else {
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('app').style.display='none';
+  }
+}
+async function login(e){
+  e.preventDefault();
+  const btn=document.getElementById('loginBtn');
+  const notice=document.getElementById('loginNotice');
+  btn.disabled=true; btn.textContent='Signing in...'; notice.style.display='none';
+  const {data,error}=await supabaseClient.auth.signInWithPassword({
+    email:document.getElementById('loginEmail').value.trim(),
+    password:document.getElementById('loginPassword').value
+  });
+  if(error){notice.textContent=error.message;notice.style.display='block';btn.disabled=false;btn.textContent='Sign in';return;}
+  if(!await verifyAdmin()){
+    await supabaseClient.auth.signOut();
+    notice.textContent='Login succeeded, but this account is not an admin.';notice.style.display='block';
+    btn.disabled=false;btn.textContent='Sign in';return;
+  }
+  await showDashboardIfAdmin();
+  btn.disabled=false;btn.textContent='Sign in';
+}
+async function logout(){await supabaseClient.auth.signOut();document.getElementById('app').style.display='none';document.getElementById('loginScreen').style.display='flex';}
+document.getElementById('loginForm').addEventListener('submit',login);
+showDashboardIfAdmin();
+</script>
+</body>
+</html>
