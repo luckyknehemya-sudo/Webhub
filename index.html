@@ -81,7 +81,7 @@ function gameClass(name){
 async function loadGames(){
   const { data, error } = await supabaseClient
     .from("games")
-    .select("id,name,genre,rating,platforms,developer,description,official_url,image_url")
+    .select("id,name,genre,rating,platforms,developer,description,official_url,image_url,play_online_url,play_store_url,app_store_url")
     .order("created_at", { ascending:false });
 
   if(error){
