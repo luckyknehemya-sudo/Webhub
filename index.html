@@ -139,7 +139,42 @@ function openGame(i){
  document.getElementById("dtitle").textContent=g.name;document.getElementById("desc").textContent=g.desc;
  document.getElementById("badges").innerHTML=`<span class="badge">${g.genre}</span><span class="badge">★ ${g.rating}</span><span class="badge">${g.platform}</span>`;
  document.getElementById("facts").innerHTML=`<div>Developer<br><b>${g.dev}</b></div><div>Genre<br><b>${g.genre}</b></div><div>Rating<br><b>★ ${g.rating}/5</b></div><div>Platforms<br><b>${g.platform}</b></div>`;
- window.currentUrl=g.url;window.scrollTo({top:0,behavior:"smooth"});
+ const links=document.getElementById("gameLinks");
+links.innerHTML="";
+
+if(g.playOnline){
+  const b=document.createElement("button");
+  b.className="btn primary";
+  b.textContent="🎮 PLAY ONLINE";
+  b.onclick=()=>window.open(g.playOnline,"_blank","noopener");
+  links.appendChild(b);
+}
+
+if(g.playStore){
+  const b=document.createElement("button");
+  b.className="btn primary";
+  b.textContent="📱 PLAY STORE";
+  b.onclick=()=>window.open(g.playStore,"_blank","noopener");
+  links.appendChild(b);
+}
+
+if(g.appStore){
+  const b=document.createElement("button");
+  b.className="btn primary";
+  b.textContent="🍎 APP STORE";
+  b.onclick=()=>window.open(g.appStore,"_blank","noopener");
+  links.appendChild(b);
+}
+
+if(g.url){
+  const b=document.createElement("button");
+  b.className="btn primary";
+  b.textContent="🌐 OFFICIAL WEBSITE";
+  b.onclick=()=>window.open(g.url,"_blank","noopener");
+  links.appendChild(b);
+}
+
+window.scrollTo({top:0,behavior:"smooth"});
 }
 function officialLink(){window.open(window.currentUrl,"_blank","noopener");}
 function showHome(){document.getElementById("detail").style.display="none";document.getElementById("home").style.display="block";window.scrollTo({top:0,behavior:"smooth"});}
