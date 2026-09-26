@@ -101,8 +101,11 @@ async function loadGames(){
     dev:g.developer || "—",
     desc:g.description || "No description available.",
     url:g.official_url || "#",
-    image:g.image_url || "",
-    c:gameClass(g.name || "Game")
+    image:g.image_url||"",
+    playOnline:g.play_online_url||"",
+    playStore:g.play_store_url||"",
+    appStore:g.app_store_url||"",
+  c:gameClass(g.name||"Game")
   }));
 
   render(games);
